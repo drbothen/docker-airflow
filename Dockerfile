@@ -50,7 +50,6 @@ RUN set -ex \
         netcat \
         locales \
         git \
-        virtualenv \
     && sed -i 's/^# en_US.UTF-8 UTF-8$/en_US.UTF-8 UTF-8/g' /etc/locale.gen \
     && locale-gen \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
@@ -64,6 +63,7 @@ RUN set -ex \
         --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-${AIRFLOW_VERSION}/constraints-3.8.txt" \
         --use-deprecated legacy-resolver \
     && pip install 'redis==3.2' \
+    && pip install virtualenv \
     && if [ -n "${PYTHON_DEPS}" ]; then pip install ${PYTHON_DEPS}; fi \
     && apt-get purge --auto-remove -yqq $buildDeps \
     && apt-get autoremove -yqq --purge \
@@ -78,6 +78,8 @@ RUN set -ex \
 
 COPY script/entrypoint.sh /entrypoint.sh
 COPY config/airflow.cfg ${AIRFLOW_USER_HOME}/airflow.cfg
+
+ENV PATH=${PATH}:/usr/local/airflow/.local/bin
 
 RUN chown -R airflow: ${AIRFLOW_USER_HOME}
 
